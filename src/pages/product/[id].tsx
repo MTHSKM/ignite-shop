@@ -15,7 +15,7 @@ interface ProductProps {
     name: string;
     imageUrl: string;
     price: string;
-    description: string;
+    description: string | null;
   };
 }
 
@@ -46,14 +46,17 @@ export default function Product({ product }: ProductProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
-    paths: [],
+    paths: [
+      /* 5 ~ 10 produtos mais acessados */
+    ],
     fallback: true,
   };
 };
 
-export const getStaticProps: GetStaticProps<any, { id: string }> = async ({
-  params,
-}) => {
+export const getStaticProps: GetStaticProps<
+  ProductProps,
+  { id: string }
+> = async ({ params }) => {
   const productId = params!.id;
 
   const product = await stripe.products.retrieve(productId, {
