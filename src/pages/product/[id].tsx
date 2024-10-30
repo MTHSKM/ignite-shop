@@ -33,10 +33,10 @@ export default function Product({ product }: ProductProps) {
         priceId: product.defaultPriceId
       })
 
-      const {checkoutUrl} = response.data
+      const { checkoutUrl } = response.data
 
       window.location.href = checkoutUrl
-    } catch(err) {
+    } catch (err) {
       // Conectar com uma ferramenta de observabilidade (Datalog / Sentry)
 
       setIsCreatingCheckoutSession(false)
@@ -82,7 +82,11 @@ export const getStaticProps: GetStaticProps<
   ProductProps,
   { id: string }
 > = async ({ params }) => {
-  const productId = params!.id;
+
+  const productId = params?.id
+  if (!productId) {
+    return { notFound: true }
+  }
 
   const product = await stripe.products.retrieve(productId, {
     expand: ["default_price"],
