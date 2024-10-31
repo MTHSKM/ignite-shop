@@ -4,20 +4,20 @@ import {
   ProductContainer,
   ProductDetails,
 } from "@/styles/pages/product";
-import axios from "axios";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import Stripe from "stripe";
+import { useShoppingCart } from "use-shopping-cart";
 
 interface ProductProps {
   product: {
     id: string;
     name: string;
     imageUrl: string;
-    price: string;
+    price: number;
     description: string | null;
     defaultPriceId: string
   };
@@ -25,24 +25,32 @@ interface ProductProps {
 
 export default function Product({ product }: ProductProps) {
   const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
+  const { addItem } = useShoppingCart()
 
   async function handleBuyProduct() {
     try {
       setIsCreatingCheckoutSession(true)
 
-      const response = await axios.post('/api/checkout', {
-        priceId: product.defaultPriceId
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        currency: 'BRL',
+        image: product.imageUrl,
+        quantity: 1,
+        defaultPriceId: product.defaultPriceId
       })
 
-      const { checkoutUrl } = response.data
-
-      window.location.href = checkoutUrl
     } catch (err) {
       // Conectar com uma ferramenta de observabilidade (Datalog / Sentry)
 
       setIsCreatingCheckoutSession(false)
 
       alert('Falha ao redirecionar ao checkout!')
+    } finally {
+      setIsCreatingCheckoutSession(false);
     }
   }
 
@@ -65,11 +73,16 @@ export default function Product({ product }: ProductProps) {
 
         <ProductDetails>
           <h1>{product.name}</h1>
-          <span>{product.price}</span>
+          <span>
+            {new Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(product.price)}
+          </span>
 
           <p>{product.description}</p>
 
-          <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>Comprar agora</button>
+          <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>{isCreatingCheckoutSession ? 'Processando...' : 'Adicionar ao Carrinho'}</button>
         </ProductDetails>
       </ProductContainer>
     </>
@@ -107,10 +120,7 @@ export const getStaticProps: GetStaticProps<
         id: product.id,
         name: product.name,
         imageUrl: product.images[0],
-        price: new Intl.NumberFormat("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        }).format(price.unit_amount! / 100),
+        price: price.unit_amount ? price.unit_amount / 100 : 0,
         description: product.description,
         defaultPriceId: price.id
       },
