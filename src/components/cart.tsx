@@ -39,7 +39,7 @@ export function CartDrawer() {
 
       } catch(err) {
         setIsCreatingCheckoutSession(false)
-
+        console.error(err)
         alert('Falha ao redirecionar ao checkout!')
       } finally {
         setIsCreatingCheckoutSession(false)

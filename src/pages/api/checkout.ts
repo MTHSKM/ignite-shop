@@ -1,5 +1,4 @@
 import { stripe } from "@/lib/stripe";
-import { error } from "console";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -32,8 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(201).json({
       checkoutUrl: checkoutSession.url
     })
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Failed to create checkout session." });
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: "Failed to create checkout session." })
   }
 }

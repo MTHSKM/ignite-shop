@@ -47,7 +47,7 @@ export default function Product({ product }: ProductProps) {
       // Conectar com uma ferramenta de observabilidade (Datalog / Sentry)
 
       setIsCreatingCheckoutSession(false)
-
+      console.error(err)
       alert('Falha ao redirecionar ao checkout!')
     } finally {
       setIsCreatingCheckoutSession(false);
